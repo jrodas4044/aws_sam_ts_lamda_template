@@ -1,0 +1,45 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Description: >
+  sam-app
+  Sample SAM Template for sam-app
+  
+Globals:
+  Function:
+    Architectures:
+      - arm64
+    Runtime: nodejs18.x
+
+    CodeUri: ./src
+    Environment:
+      Variables:
+        NODE_OPTIONS: '--enable-source-maps'
+
+Resources:
+  # Rest API
+  API:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: prod
+
+    # Lambda function
+  HelloWorldFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: handlers/hello.handler
+      Events:
+        HttpPost:
+          Type: Api
+          Properties:
+            Path: /hello
+            Method: get
+            RestApiId: !Ref API
+    Metadata: # Manage esbuild properties
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true
+        EntryPoints:
+          - handlers/hello.ts
